@@ -22,6 +22,44 @@ Pinning happens through the `cli-version` input, so deploys stay reproducible.
 > **Runner support:** `flipbook-cli` ships binaries for `linux-x86_64` and
 > `macos-arm64`. Use `ubuntu-latest` (recommended) or `macos-latest` runners.
 
+## Setup
+
+### 1. Create the storybook preview experience
+
+1. Navigate to the [Creator Hub](https://create.roblox.com/dashboard/creations) and create a new experience.
+2. Give it a name and publish it.
+
+   ![Save Experience dialog](docs/save-experience.png)
+
+3. Copy the **UniverseId** and **PlaceId** — you'll need them later.
+4. Close out of the experience in Studio to avoid "Conflict" errors during deploys.
+5. Navigate to the start place and enable **Direct Access Control > Fully Open**. This is what enables stable, PR-scoped URLs for each deployment.
+
+   ![Direct Access Control settings](docs/direct-access-control.png)
+
+### 2. Create an Open Cloud API key
+
+1. Go to [https://create.roblox.com/dashboard/credentials](https://create.roblox.com/dashboard/credentials).
+2. Click **Create API Key** and give it a name tied to the experience.
+3. Optionally restrict it to that specific experience to reduce blast radius.
+4. Grant it place-publishing access.
+
+   ![API key permissions](docs/api-key-permissions.png)
+5. Generate the key and store it somewhere safe.
+
+### 3. Add secrets to your GitHub repository
+
+In your repository's **Settings > Environments** (or **Secrets and variables > Actions**):
+
+| Name | Type | Value |
+| ---- | ---- | ----- |
+| `ROBLOX_API_KEY` | Secret | The Open Cloud API key from step 2 |
+| `STORYBOOK_UNIVERSE_ID` | Variable | The UniverseId from step 1 |
+
+### 4. Add the workflow
+
+See [Usage](#usage) below.
+
 ## Usage
 
 The CLI deploys a pre-built `.rbxl` place file that contains your storybooks and
@@ -90,8 +128,7 @@ Create these in your repository settings and reference them as shown above:
 | `ROBLOX_STORYBOOK_UNIVERSE_ID` | Universe (experience) ID     |
 
 The API key needs Open Cloud place-publishing access for the target universe.
-See the [flipbook-cli README](https://github.com/flipbook-labs/flipbook-cli) for
-details on creating the experience and key.
+See [Setup](#setup) above for step-by-step instructions.
 
 ## Releasing
 
