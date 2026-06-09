@@ -1,0 +1,100 @@
+name: Deploy Flipbook Storybook
+description: >-
+  Deploy a Flipbook storybook to a Roblox experience via Open Cloud, using
+  flipbook-cli. Installs the CLI for you with Rokit — no manual setup required.
+author: vocksel
+branding:
+  icon: book-open
+  color: red
+
+inputs:
+  api-key:
+    description: >-
+      Roblox Open Cloud API key. Required to publish. Supplied to the CLI as the
+      ROBLOX_API_KEY env var. Pass from a secret, e.g. ${{ secrets.ROBLOX_API_KEY }}.
+    required: true
+  universe-id:
+    description: Universe (experience) ID to deploy to. Maps to --universe-id.
+    required: true
+  place-name:
+    description: >-
+      Name of the place to update or create for this deployment (e.g. "main", or
+      "pr-42" for a preview). Maps to --place-name.
+    required: true
+  place-file:
+    description: >-
+      Path to the built .rbxl place file containing your storybooks and stories.
+      Maps to --place-file.
+    required: true
+
+  place-id:
+    description: >-
+      Optional explicit place ID to publish to. If omitted, the place is resolved
+      or created by --place-name. Use this to disambiguate same-named places.
+      Maps to --place-id.
+    required: false
+    default: ""
+  flipbook-rbxm:
+    description: >-
+      Optional path to a local Flipbook.rbxm to use as the runtime. When set,
+      skips downloading the latest Flipbook from GitHub. Maps to --flipbook-rbxm.
+    required: false
+    default: ""
+
+  cli-version:
+    description: >-
+      Version of flipbook-labs/flipbook-cli to install via Rokit (no leading
+      "v"). Pin this to keep deploys reproducible.
+    required: false
+    default: "0.5.0"
+  rokit-version:
+    description: Version of Rokit to install (git tag, e.g. v1.2.0).
+    required: false
+    default: v1.2.0
+  github-token:
+    description: >-
+      Token used to authenticate Rokit's downloads from GitHub releases, and the
+      CLI's download of the Flipbook runtime. Defaults to the workflow's token.
+    required: false
+    default: ${{ github.token }}
+
+runs:
+  using: composite
+  steps:
+    - name: Install Rokit
+      uses: CompeyDev/setup-rokit@v0.2.1
+      with:
+        version: ${{ inputs.rokit-version }}
+        token: ${{ inputs.github-token }}
+
+    - name: Install flipbook-cli
+      shell: bash
+      run: rokit add --global "flipbook-labs/flipbook-cli@${{ inputs.cli-version }}"
+
+    - name: Deploy
+      shell: bash
+      env:
+        ROBLOX_API_KEY: ${{ inputs.api-key }}
+        GITHUB_TOKEN: ${{ inputs.github-token }}
+        INPUT_UNIVERSE_ID: ${{ inputs.universe-id }}
+        INPUT_PLACE_NAME: ${{ inputs.place-name }}
+        INPUT_PLACE_FILE: ${{ inputs.place-file }}
+        INPUT_PLACE_ID: ${{ inputs.place-id }}
+        INPUT_FLIPBOOK_RBXM: ${{ inputs.flipbook-rbxm }}
+      run: |
+        set -euo pipefail
+
+        args=(deploy
+          --universe-id "$INPUT_UNIVERSE_ID"
+          --place-name "$INPUT_PLACE_NAME"
+          --place-file "$INPUT_PLACE_FILE"
+        )
+
+        if [[ -n "$INPUT_PLACE_ID" ]]; then
+          args+=(--place-id "$INPUT_PLACE_ID")
+        fi
+        if [[ -n "$INPUT_FLIPBOOK_RBXM" ]]; then
+          args+=(--flipbook-rbxm "$INPUT_FLIPBOOK_RBXM")
+        fi
+
+        flipbook-cli "${args[@]}"
