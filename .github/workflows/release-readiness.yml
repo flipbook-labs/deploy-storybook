@@ -1,0 +1,150 @@
+name: Release Readiness
+
+# Owns the release lifecycle up to the point a maintainer presses "publish" on the
+# drafted GitHub release: decide whether to publish, tag + draft the release, and
+# open the auto-generated publish PR.
+#
+# The lifecycle itself lives in the `flipbook-cli release` subcommands (gate,
+# draft, prepare-pr). We consume flipbook-cli as a Rokit tool (see rokit.toml) and
+# call it directly.
+#
+# Unlike flipbook-cli's own workflow, this repo ships a GitHub Action consumed
+# straight from the repo at a git ref, so there is no binary to build or artifact
+# to attach: the `build` and `attach` jobs drop out, and the only build-time
+# artifact is the source already in the repo.
+#
+# Deployment (moving the major-version pointer tag once a release is published)
+# lives separately in release.yml.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      force_publish:
+        description: Tag and create draft release from version on `main`
+        type: boolean
+        default: false
+
+jobs:
+  gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      has_changes: ${{ steps.eval.outputs.has_changes }}
+      should_publish: ${{ steps.eval.outputs.should_publish }}
+      version: ${{ steps.eval.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: CompeyDev/setup-rokit@v0.1.2
+        with:
+          version: v1.2.0
+
+      - name: Evaluate release action
+        id: eval
+        run: |
+          set -euo pipefail
+          result="$(flipbook-cli release gate ${{ inputs.force_publish && '--force-publish' || '' }})"
+          echo "$result"
+          jq -r 'to_entries[] | "\(.key)=\(.value)"' <<< "$result" >> "$GITHUB_OUTPUT"
+
+  publish-release:
+    needs: gate
+    if: needs.gate.outputs.should_publish == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: CompeyDev/setup-rokit@v0.1.2
+        with:
+          version: v1.2.0
+
+      - name: Tag and draft release
+        run: flipbook-cli release draft --version "${{ needs.gate.outputs.version }}"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  prepare-release-pr:
+    needs: [gate, publish-release]
+    if: |
+      always() &&
+      needs.gate.result == 'success' &&
+      (
+        (needs.gate.outputs.has_changes == 'true' && needs.gate.outputs.should_publish != 'true') ||
+        (needs.gate.outputs.should_publish == 'true' && needs.publish-release.result == 'success')
+      )
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+      pull-requests: write
+    concurrency:
+      group: release-pr-${{ github.ref }}
+      cancel-in-progress: true
+    steps:
+      - name: Generate app token
+        id: app-token
+        uses: actions/create-github-app-token@v3
+        with:
+          app-id: ${{ secrets.FLIPBOOK_BACKEND_APP_ID }}
+          private-key: ${{ secrets.FLIPBOOK_BACKEND_APP_PRIVATE_KEY }}
+
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ steps.app-token.outputs.token }}
+
+      # `release prepare-pr` shells out to git-cliff to regenerate the changelog,
+      # which Rokit provides.
+      - uses: CompeyDev/setup-rokit@v0.1.2
+        with:
+          version: v1.2.0
+
+      - name: Prepare release changes
+        id: prepare
+        run: |
+          set -euo pipefail
+          result="$(flipbook-cli release prepare-pr)"
+          echo "$result"
+          jq -r 'to_entries[] | "\(.key)=\(.value)"' <<< "$result" >> "$GITHUB_OUTPUT"
+
+      - name: Create or update publish PR
+        uses: peter-evans/create-pull-request@v7
+        with:
+          # Push as the GitHub App rather than the default GITHUB_TOKEN so the
+          # branch push triggers CI on the publish PR. Pushes made with
+          # GITHUB_TOKEN do not trigger further workflow runs.
+          # Read more: https://docs.github.com/en/actions/writing-workflows/choosing-when-your-workflow-runs/triggering-a-workflow#triggering-a-workflow-from-a-workflow
+          token: ${{ steps.app-token.outputs.token }}
+          base: ${{ github.ref_name }}
+          branch: publish-next-version
+          commit-message: Publish v${{ steps.prepare.outputs.version }}
+          title: "[AUTO-GENERATED] Publish v${{ steps.prepare.outputs.version }}"
+          add-paths: |
+            CHANGELOG.md
+            loom.config.luau
+          body: |
+            >[!IMPORTANT]
+            > This PR prepares the next release by bumping the version and updating the changelog.
+            >
+            > **Merging this PR will:**
+            >
+            > 1. Create and push tag `v${{ steps.prepare.outputs.version }}`
+            > 2. Create a draft GitHub release for that tag
+            >
+            > Publishing the draft release then moves the major-version pointer tag
+            > (e.g. `v${{ steps.prepare.outputs.version }}` -> `v<major>`) so consumers
+            > pinning `@v<major>` pick up the release.
+
+            Next release will be available here:
+            ${{ github.server_url }}/${{ github.repository }}/releases/tag/v${{ steps.prepare.outputs.version }}
+
+            🤖 This PR was generated by [this run](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}).
