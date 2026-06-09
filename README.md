@@ -76,7 +76,7 @@ disambiguate which one to publish to.
 | `place-file`    | yes      |                       | Path to the built `.rbxl` place file containing your storybooks and stories (`--place-file`).         |
 | `place-id`      | no       |                       | Explicit place ID to publish to (`--place-id`); disambiguates same-named places.                      |
 | `flipbook-rbxm` | no       |                       | Path to a local `Flipbook.rbxm` runtime (`--flipbook-rbxm`); skips downloading Flipbook from GitHub.  |
-| `cli-version`   | no       | `0.4.0`               | `flipbook-cli` version to install (no leading `v`).                                                    |
+| `cli-version`   | no       | `0.5.0`               | `flipbook-cli` version to install (no leading `v`).                                                    |
 | `rokit-version` | no       | `v1.2.0`              | Rokit version to install.                                                                              |
 | `github-token`  | no       | `${{ github.token }}` | Token used by Rokit to download from GitHub releases and by the CLI to fetch the Flipbook runtime.    |
 
