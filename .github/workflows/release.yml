@@ -1,11 +1,9 @@
 name: Release
 
-# Owns deployment for this GitHub Action. flipbook-cli's own Release workflow
-# publishes its plugin to the Roblox Creator Store at this stage; the equivalent
-# "deploy" for an action is making the new release consumable, so when a drafted
-# release is published we move the major-version pointer tag (e.g. `v1`) to the
-# released commit. Consumers pinning `uses: flipbook-labs/deploy-storybook@v1`
-# then pick up the latest v1.x.y without changing their workflows.
+# Owns deployment for this GitHub Action: when a drafted release is published,
+# move the major-version pointer tag (e.g. `v1`) to the released commit.
+# Consumers pinning `uses: flipbook-labs/deploy-storybook@v1` then pick up the
+# latest v1.x.y without changing their workflows.
 
 on:
   release:
