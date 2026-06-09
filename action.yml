@@ -18,8 +18,9 @@ inputs:
     required: true
   place-name:
     description: >-
-      Name of the place to update or create for this deployment (e.g. "main", or
-      "pr-42" for a preview). Maps to --place-name.
+      Name of the place to update or create for this deployment (e.g.
+      "Flipbook Stories", or "Storybook Preview" for a per-PR place).
+      Maps to --place-name.
     required: true
   place-file:
     description: >-
@@ -69,7 +70,9 @@ runs:
 
     - name: Install flipbook-cli
       shell: bash
-      run: rokit add --global "flipbook-labs/flipbook-cli@${{ inputs.cli-version }}"
+      env:
+        CLI_VERSION: ${{ inputs.cli-version }}
+      run: rokit add --global "flipbook-labs/flipbook-cli@$CLI_VERSION"
 
     - name: Deploy
       shell: bash

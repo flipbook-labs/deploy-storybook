@@ -42,11 +42,11 @@ jobs:
 
       # ...build your storybook place file (e.g. `rojo build`) into storybook.rbxl...
 
-      - uses: vocksel/deploy-storybook@v1
+      - uses: flipbook-labs/deploy-storybook@v1
         with:
           api-key: ${{ secrets.ROBLOX_API_KEY }}
           universe-id: ${{ secrets.ROBLOX_STORYBOOK_UNIVERSE_ID }}
-          place-name: main
+          place-name: Flipbook Stories
           place-file: storybook.rbxl
 ```
 
@@ -55,11 +55,11 @@ jobs:
 Deploy each pull request to its own named place by setting `place-name`:
 
 ```yaml
-- uses: vocksel/deploy-storybook@v1
+- uses: flipbook-labs/deploy-storybook@v1
   with:
     api-key: ${{ secrets.ROBLOX_API_KEY }}
     universe-id: ${{ secrets.ROBLOX_STORYBOOK_UNIVERSE_ID }}
-    place-name: pr-${{ github.event.number }}
+    place-name: "Storybook Preview #${{ github.event.number }}"
     place-file: storybook.rbxl
 ```
 
@@ -72,7 +72,7 @@ disambiguate which one to publish to.
 | --------------- | -------- | --------------------- | ----------------------------------------------------------------------------------------------------- |
 | `api-key`       | yes      |                       | Roblox Open Cloud API key (passed to the CLI as `ROBLOX_API_KEY`). Pass from a secret.                |
 | `universe-id`   | yes      |                       | Universe (experience) ID to deploy to (`--universe-id`).                                              |
-| `place-name`    | yes      |                       | Name of the place to update or create (`--place-name`), e.g. `main` or `pr-42`.                       |
+| `place-name`    | yes      |                       | Name of the place to update or create (`--place-name`), e.g. `Flipbook Stories` or `Storybook Preview`. |
 | `place-file`    | yes      |                       | Path to the built `.rbxl` place file containing your storybooks and stories (`--place-file`).         |
 | `place-id`      | no       |                       | Explicit place ID to publish to (`--place-id`); disambiguates same-named places.                      |
 | `flipbook-rbxm` | no       |                       | Path to a local `Flipbook.rbxm` runtime (`--flipbook-rbxm`); skips downloading Flipbook from GitHub.  |
