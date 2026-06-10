@@ -196,10 +196,7 @@ jobs:
           # the publish PR will render, with a short do-not-merge warning on top.
           body: |
             >[!WARNING]
-            > **Debug artifact — do not merge.** Built from the branch of
-            > #${{ github.event.pull_request.number }} and pushed to
-            > `debug-publish-pr-${{ github.event.pull_request.number }}`, so it can't
-            > touch the real `publish-next-version` PR. Close it when you're done.
+            > **Debug artifact — do not merge.** Built from the branch of #${{ github.event.pull_request.number }} and pushed to `debug-publish-pr-${{ github.event.pull_request.number }}`, so it can't touch the real `publish-next-version` PR. Close it when you're done.
 
             >[!IMPORTANT]
             > This PR prepares the next release by bumping the version and updating the changelog.
