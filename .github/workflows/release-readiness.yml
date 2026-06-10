@@ -140,7 +140,9 @@ jobs:
           set -euo pipefail
           result="$(flipbook-cli release prepare-pr)"
           echo "$result"
-          jq -r 'to_entries[] | "\(.key)=\(.value)"' <<< "$result" >> "$GITHUB_OUTPUT"
+          # `release prepare-pr` shells out to git-cliff, whose command echo lands
+          # on stdout ahead of the JSON result; keep only the final JSON line.
+          jq -r 'to_entries[] | "\(.key)=\(.value)"' <<< "$(tail -n1 <<< "$result")" >> "$GITHUB_OUTPUT"
 
       - name: Create or update publish PR
         if: github.event_name != 'pull_request'
