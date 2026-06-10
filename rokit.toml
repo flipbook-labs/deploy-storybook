@@ -4,10 +4,5 @@
 # New tools can be added by running `rokit add <tool>` in a terminal.
 
 [tools]
-# The release lifecycle (gate, draft, prepare-pr) is driven by flipbook-cli's
-# `release` subcommands. We consume it as a prebuilt Rokit tool and call it
-# directly rather than building it from source.
 flipbook-cli = "flipbook-labs/flipbook-cli@0.5.0"
-# `release draft` / `release prepare-pr` shell out to git-cliff to render the
-# release notes and regenerate CHANGELOG.md.
 git-cliff = "orhun/git-cliff@2.13.1"
