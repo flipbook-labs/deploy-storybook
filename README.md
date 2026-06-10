@@ -107,7 +107,7 @@ disambiguate which one to publish to.
 ## Required secrets and variables
 
 We recommend creating a [GitHub Environment](https://docs.github.com/en/actions/deployment/targeting-different-deployment-environments/using-environments-for-deployment)
-(e.g. `production`) and storing these there:
+(e.g. `storybook-preview`) and storing these there:
 
 | Name                           | Type     | Description              |
 | ------------------------------ | -------- | ------------------------ |
