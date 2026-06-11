@@ -211,6 +211,7 @@ jobs:
           token: ${{ steps.app-token.outputs.token }}
           base: ${{ github.ref_name }}
           branch: publish-next-version
+          draft: true
           commit-message: Publish v${{ steps.prepare.outputs.version }}
           title: "[AUTO-GENERATED] Publish v${{ steps.prepare.outputs.version }}"
           add-paths: |
@@ -250,6 +251,7 @@ jobs:
           token: ${{ steps.app-token.outputs.token }}
           base: main
           branch: debug-publish-pr-${{ github.event.pull_request.number }}
+          draft: true
           commit-message: Publish v${{ steps.prepare.outputs.version }}
           title: "[DEBUG — DO NOT MERGE] Regenerated publish PR for #${{ github.event.pull_request.number }}"
           add-paths: |
