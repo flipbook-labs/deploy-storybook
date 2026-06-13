@@ -2,36 +2,28 @@ name: Release
 
 # Owns the entire release lifecycle for this GitHub Action, in two phases:
 #
-#   1. Readiness (gate -> publish-release -> prepare-release-pr): decide whether
-#      to publish, tag + draft + publish the release, and open the
-#      auto-generated publish PR.
+#   1. Readiness (release): changewrite handles the full cycle — gate, draft,
+#      publish, and the version-bump PR — in a single job.
 #   2. Deployment (move-major-tag): once a release is published, move the
 #      major-version pointer tag (e.g. `v1`) to the released commit so consumers
 #      pinning `uses: flipbook-labs/deploy-storybook@v1` pick up the latest
 #      v1.x.y without changing their workflows.
 #
-# The readiness phase lives in the `flipbook-cli release` subcommands (gate,
-# draft, prepare-pr). We consume flipbook-cli as a Rokit tool (see rokit.toml)
-# and call it directly. Phase 1 publishes the release with the GitHub App token,
-# which emits the `release: published` event that re-triggers this workflow into
-# phase 2 (see the publish-release notes below for why the App token matters).
-#
-# Unlike flipbook-cli's own workflow, this repo ships a GitHub Action consumed
-# straight from the repo at a git ref, so there is no binary to build or artifact
-# to attach: the `build` and `attach` jobs drop out, and the only build-time
-# artifact is the source already in the repo.
+# The release job must authenticate with the GitHub App token (not GITHUB_TOKEN)
+# for two reasons:
+#   - Publishing the release via the App token emits the `release: published`
+#     event that re-triggers this workflow into phase 2. GITHUB_TOKEN publishes
+#     do not emit events that start other workflow runs.
+#   - The version-bump PR must be opened as the App so its push triggers CI;
+#     PRs created by GITHUB_TOKEN do not trigger other workflow runs.
 
 on:
   push:
     branches: [main]
-  # Run the read-only `gate` job on PRs as well, so changes to this workflow (or
-  # to anything it depends on) are exercised before they land. The side-effecting
-  # jobs below are guarded with `github.event_name != 'pull_request'`, so by
-  # default a PR can never tag, draft a release, or touch the real publish PR.
-  #
-  # Escape hatch: label a PR `debug:release-pr` to force `prepare-release-pr` to
-  # run and open a *throwaway* debug PR (see that job) for debugging changelog /
-  # version regeneration. The `labeled` type makes adding the label re-trigger.
+  # The release job sits out regular PRs; label a PR `debug:release-pr` to
+  # force it to run in `prepare-only` mode and open a throwaway debug PR for
+  # inspecting changelog / version regeneration. The `labeled` type makes
+  # adding the label re-trigger.
   pull_request:
     types: [opened, synchronize, reopened, labeled]
   # Phase 2 entry point: a published release advances the major-version pointer.
@@ -50,100 +42,14 @@ on:
         required: false
 
 jobs:
-  gate:
-    # The readiness pipeline (gate -> publish-release -> prepare-release-pr) runs
-    # for pushes, PRs, and a force_publish dispatch. It sits out the
-    # `release: published` event and a deploy-only dispatch (`tag` set), both of
-    # which only drive move-major-tag below.
+  release:
+    # The readiness pipeline runs for pushes, labeled PRs, and a force_publish
+    # dispatch. It sits out the `release: published` event and a deploy-only
+    # dispatch (`tag` set), both of which only drive move-major-tag below.
     if: >-
       github.event_name == 'push' ||
-      github.event_name == 'pull_request' ||
+      (github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'debug:release-pr')) ||
       (github.event_name == 'workflow_dispatch' && inputs.tag == '')
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    outputs:
-      has_changes: ${{ steps.eval.outputs.has_changes }}
-      should_publish: ${{ steps.eval.outputs.should_publish }}
-      version: ${{ steps.eval.outputs.version }}
-    steps:
-      - uses: actions/checkout@v6
-        with:
-          fetch-depth: 0
-
-      - uses: CompeyDev/setup-rokit@1d9390883f7ebce19d48f5b8d006e11d387c92ab # v0.2.1
-        with:
-          version: v1.2.0
-          token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Evaluate release action
-        id: eval
-        run: |
-          set -euo pipefail
-          result="$(flipbook-cli release gate ${{ inputs.force_publish && '--force-publish' || '' }})"
-          echo "$result"
-          jq -r 'to_entries[] | "\(.key)=\(.value)"' <<< "$result" >> "$GITHUB_OUTPUT"
-
-  publish-release:
-    needs: gate
-    if: github.event_name != 'pull_request' && needs.gate.outputs.should_publish == 'true'
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    permissions:
-      contents: write
-    steps:
-      - name: Generate app token
-        id: app-token
-        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
-        with:
-          client-id: ${{ secrets.FLIPBOOK_BACKEND_APP_ID }}
-          private-key: ${{ secrets.FLIPBOOK_BACKEND_APP_PRIVATE_KEY }}
-
-      - uses: actions/checkout@v6
-        with:
-          fetch-depth: 0
-
-      - uses: CompeyDev/setup-rokit@1d9390883f7ebce19d48f5b8d006e11d387c92ab # v0.2.1
-        with:
-          version: v1.2.0
-          token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Tag and draft release
-        run: flipbook-cli release draft --version "${{ needs.gate.outputs.version }}"
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      # This repo attaches no artifacts to its releases, so there is nothing to
-      # wait for between drafting and publishing: take the release live in the
-      # same job.
-      #
-      # Publish with the GitHub App token, NOT GITHUB_TOKEN. A release published
-      # via GITHUB_TOKEN does not emit events that start other workflow runs, so
-      # the `release: published` event that the move-major-tag job below listens
-      # for would never fire. The App token is a separate identity, so its
-      # published event does re-trigger this workflow into the deploy phase.
-      - name: Publish release
-        run: flipbook-cli release publish --tag "v${{ needs.gate.outputs.version }}"
-        env:
-          GH_TOKEN: ${{ steps.app-token.outputs.token }}
-
-  prepare-release-pr:
-    needs: [gate, publish-release]
-    if: |
-      always() &&
-      needs.gate.result == 'success' &&
-      (
-        (
-          github.event_name != 'pull_request' &&
-          (
-            (needs.gate.outputs.has_changes == 'true' && needs.gate.outputs.should_publish != 'true') ||
-            (needs.gate.outputs.should_publish == 'true' && needs.publish-release.result == 'success')
-          )
-        ) ||
-        (
-          github.event_name == 'pull_request' &&
-          contains(github.event.pull_request.labels.*.name, 'debug:release-pr')
-        )
-      )
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:
@@ -151,7 +57,7 @@ jobs:
       pull-requests: write
     concurrency:
       group: release-pr-${{ github.ref }}
-      cancel-in-progress: true
+      cancel-in-progress: ${{ github.event_name == 'pull_request' }}
     steps:
       - name: Generate app token
         id: app-token
@@ -164,94 +70,48 @@ jobs:
         with:
           fetch-depth: 0
           token: ${{ steps.app-token.outputs.token }}
-          # On a debug PR run, check out the PR's own branch so the regeneration
-          # runs against this PR's content (the debug PR then previews the publish
-          # PR as it would look once this PR merges).
-          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.ref || github.ref }}
+          ref: main
 
-      # `release prepare-pr` shells out to git-cliff to regenerate the changelog,
-      # which Rokit provides.
-      - uses: CompeyDev/setup-rokit@1d9390883f7ebce19d48f5b8d006e11d387c92ab # v0.2.1
+      - uses: flipbook-labs/changewrite@v0.1.0
         with:
-          version: v1.2.0
-          token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Prepare release changes
-        id: prepare
-        run: |
-          set -euo pipefail
-          result="$(flipbook-cli release prepare-pr)"
-          echo "$result"
-          # `release prepare-pr` shells out to git-cliff, whose command echo lands
-          # on stdout ahead of the JSON result; keep only the final JSON line.
-          jq -r 'to_entries[] | "\(.key)=\(.value)"' <<< "$(tail -n1 <<< "$result")" >> "$GITHUB_OUTPUT"
-
-      # Preview the release this PR will produce, rendered by the same command
-      # that will populate the real release notes (`release notes` shares its
-      # renderer with `release draft`), so the preview can't drift. The tag does
-      # not exist yet here, so it renders the not-yet-released commits.
-      - name: Render release notes preview
-        id: notes
-        run: |
-          set -euo pipefail
-          {
-            echo 'body<<__RELEASE_NOTES_EOF__'
-            flipbook-cli release notes --version "${{ steps.prepare.outputs.version }}"
-            echo '__RELEASE_NOTES_EOF__'
-          } >> "$GITHUB_OUTPUT"
-
-      # One PR-generation step for both the real publish PR and the debug PR; the
-      # only difference is the branch it pushes to. A debug run (a labeled PR)
-      # targets a separate `debug-*` branch so it can never touch the real
-      # `publish-next-version` PR.
-      - name: Create or update publish PR
-        uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8.1.1
-        with:
-          # Push as the GitHub App rather than the default GITHUB_TOKEN so the
-          # branch push triggers CI on the publish PR. Pushes made with
-          # GITHUB_TOKEN do not trigger further workflow runs.
-          # Read more: https://docs.github.com/en/actions/writing-workflows/choosing-when-your-workflow-runs/triggering-a-workflow#triggering-a-workflow-from-a-workflow
-          token: ${{ steps.app-token.outputs.token }}
+          # Use the App token so publishing fires `release: published` → move-major-tag,
+          # and so the version-bump PR triggers CI when pushed. pr-token defaults to
+          # github-token when omitted, so no separate pr-token is needed here.
+          github-token: ${{ steps.app-token.outputs.token }}
+          force-publish: ${{ inputs.force_publish || false }}
           base: main
           branch: ${{ github.event_name == 'pull_request' && 'debug-publish-next-version' || 'publish-next-version' }}
-          draft: true
-          commit-message: Publish v${{ steps.prepare.outputs.version }}
-          title: "${{ github.event_name == 'pull_request' && '[DEBUG]' || '[AUTO-GENERATED]' }} Publish v${{ steps.prepare.outputs.version }}"
-          add-paths: |
-            CHANGELOG.md
-            loom.config.luau
-          body: |
-            ${{ github.event_name == 'pull_request' && '> [!WARNING]' || '' }}
-            ${{ github.event_name == 'pull_request' && '> Debug preview — do not merge.' || '' }}
-
+          prepare-only: ${{ github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'debug:release-pr') }}
+          pr-title: ${{ github.event_name == 'pull_request' && '[DEBUG] Publish v{{version}}' || 'Publish v{{version}}' }}
+          pr-body: |
             >[!IMPORTANT]
             > This PR prepares the next release by bumping the version and updating the changelog.
             >
             > **Merging this PR will:**
             >
-            > 1. Create and push tag `v${{ steps.prepare.outputs.version }}`
+            > 1. Create and push tag `{{tag}}`
             > 2. Create a GitHub release for that tag and publish it
-            > 3. Move the major-version pointer tag (e.g. `v${{ steps.prepare.outputs.version }}` -> `v<major>`) so consumers pinning `@v<major>` pick up the release
+            > 3. Move the major-version pointer tag (e.g. `{{tag}}` -> `v<major>`) so consumers pinning `@v<major>` pick up the release
 
-            ## Release preview
+            <details>
+            <summary><b>GitHub Release preview</b></summary>
 
-            Once merged and published, the GitHub release will look like this:
+            # {{tag}}
 
-            **Title:** v${{ steps.prepare.outputs.version }} &nbsp;·&nbsp; **Tag:** `v${{ steps.prepare.outputs.version }}`
+            **github-actions** released this 0 seconds ago 🔒 Immutable 🏷️ {{tag}} 🔗 SHA
 
-            ${{ steps.notes.outputs.body }}
-
-            ---
+            {{notes}}
+            </details>
 
             Next release will be available here:
-            ${{ github.server_url }}/${{ github.repository }}/releases/tag/v${{ steps.prepare.outputs.version }}
+            {{repo_url}}/releases/tag/{{tag}}
 
-            🤖 This PR was generated by [this run](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}).
+            🤖 This PR was generated by [this run]({{run_url}}).
 
   move-major-tag:
     # Deploy phase: advance the major-version pointer tag (e.g. `v1`) to the
-    # released commit. Runs when a release is published (the publish-release job
-    # above fires this via the App token) and, for manual recovery, on a
+    # released commit. Runs when a release is published (the release job above
+    # fires this via the App token) and, for manual recovery, on a
     # workflow_dispatch that supplies `tag`. Skips prereleases: only stable
     # releases should advance the major pointer.
     if: >-
