@@ -47,7 +47,7 @@ jobs:
           token: ${{ steps.app-token.outputs.token }}
           ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || 'main' }}
 
-      - uses: flipbook-labs/changewrite@v0.2.0
+      - uses: flipbook-labs/changewrite@v0.3.0
         with:
           # Use the App token so publishing fires `release: published` → move-major-tag,
           # and so the version-bump PR triggers CI when pushed. pr-token defaults to
