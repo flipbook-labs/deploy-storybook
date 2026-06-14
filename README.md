@@ -76,19 +76,39 @@ jobs:
 
 ### Per-PR preview deploys
 
-Deploy each pull request to its own named place by setting `place-name`:
+Deploy each pull request to its own named place and get an automatic comment
+with preview links. Add `pull-requests: write` so the action can post the
+comment:
 
 ```yaml
-- uses: flipbook-labs/deploy-storybook@v1
-  with:
-    api-key: ${{ secrets.ROBLOX_API_KEY }}
-    universe-id: ${{ vars.ROBLOX_STORYBOOK_UNIVERSE_ID }}
-    place-name: "PR ${{ github.event.pull_request.number }}"
-    place-file: storybook.rbxl
+name: Deploy storybook
+on:
+  pull_request:
+
+permissions:
+  pull-requests: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: storybook-preview
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Build storybook
+        run: rojo build storybook.project.json -o storybook.rbxl
+
+      - uses: flipbook-labs/deploy-storybook@v1
+        with:
+          api-key: ${{ secrets.ROBLOX_API_KEY }}
+          universe-id: ${{ vars.ROBLOX_STORYBOOK_UNIVERSE_ID }}
+          place-name: "PR ${{ github.event.pull_request.number }}"
+          place-file: storybook.rbxl
 ```
 
-If you keep multiple places with the same name, pass an explicit `place-id` to
-disambiguate which one to publish to.
+To disable the comment, pass `comment: 'false'`. If you keep multiple places
+with the same name, pass an explicit `place-id` to disambiguate which one to
+publish to.
 
 ## Inputs
 
@@ -102,7 +122,8 @@ disambiguate which one to publish to.
 | `flipbook-rbxm` | no       | Path to a local `Flipbook.rbxm` runtime; skips downloading Flipbook from GitHub.       |                       |
 | `cli-version`   | no       | `flipbook-cli` version to install (no leading `v`).                                    | `0.6.0`               |
 | `rokit-version` | no       | Rokit version to install.                                                              | `v1.2.0`              |
-| `github-token`  | no       | Token used to authenticate downloads from GitHub Releases.                             | `${{ github.token }}` |
+| `github-token`  | no       | Token used to authenticate downloads from GitHub Releases and to post PR comments.     | `${{ github.token }}` |
+| `comment`       | no       | Post a preview comment on the PR after deploy. Requires `pull-requests: write`.        | `'true'`              |
 
 ## Required secrets and variables
 

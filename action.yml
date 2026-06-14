@@ -50,10 +50,18 @@ inputs:
     default: v1.2.0
   github-token:
     description: >-
-      Token used to authenticate Rokit's downloads from GitHub releases, and the
-      CLI's download of the Flipbook runtime. Defaults to the workflow's token.
+      Token used to authenticate Rokit's downloads from GitHub releases, the
+      CLI's download of the Flipbook runtime, and posting PR preview comments.
+      Defaults to the workflow's token.
     required: false
     default: ${{ github.token }}
+  comment:
+    description: >-
+      Post or update a storybook preview comment on the pull request after a
+      successful deploy. Set to 'false' to disable. Only runs on pull_request
+      events. Requires pull-requests: write permission on the workflow's token.
+    required: false
+    default: 'true'
 
 runs:
   using: composite
@@ -97,3 +105,20 @@ runs:
         fi
 
         flipbook-cli "${args[@]}"
+
+    - name: Comment preview link on PR
+      if: ${{ inputs.comment == 'true' && github.event_name == 'pull_request' }}
+      shell: bash
+      env:
+        ROBLOX_API_KEY: ${{ inputs.api-key }}
+        GITHUB_TOKEN: ${{ inputs.github-token }}
+        INPUT_UNIVERSE_ID: ${{ inputs.universe-id }}
+        INPUT_PLACE_NAME: ${{ inputs.place-name }}
+        INPUT_PR_NUMBER: ${{ github.event.pull_request.number }}
+        INPUT_GITHUB_REPOSITORY: ${{ github.repository }}
+      run: |
+        flipbook-cli comment \
+          --pr "$INPUT_PR_NUMBER" \
+          --universe-id "$INPUT_UNIVERSE_ID" \
+          --place-name "$INPUT_PLACE_NAME" \
+          --github-repository "$INPUT_GITHUB_REPOSITORY"
