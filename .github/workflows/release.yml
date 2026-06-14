@@ -70,7 +70,10 @@ jobs:
         with:
           fetch-depth: 0
           token: ${{ steps.app-token.outputs.token }}
-          ref: main
+          # Real readiness runs act on main. A debug PR run checks out the PR
+          # head instead so it previews changelog / version regeneration against
+          # the PR's own changewrite config, not whatever is already on main.
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || 'main' }}
 
       - uses: flipbook-labs/changewrite@v0.2.0
         with:
