@@ -112,9 +112,13 @@ runs:
       env:
         ROBLOX_API_KEY: ${{ inputs.api-key }}
         GITHUB_TOKEN: ${{ inputs.github-token }}
-      run: >-
-        flipbook-cli comment
-        --pr "${{ github.event.pull_request.number }}"
-        --universe-id "${{ inputs.universe-id }}"
-        --place-name "${{ inputs.place-name }}"
-        --github-repository "${{ github.repository }}"
+        INPUT_UNIVERSE_ID: ${{ inputs.universe-id }}
+        INPUT_PLACE_NAME: ${{ inputs.place-name }}
+        INPUT_PR_NUMBER: ${{ github.event.pull_request.number }}
+        INPUT_GITHUB_REPOSITORY: ${{ github.repository }}
+      run: |
+        flipbook-cli comment \
+          --pr "$INPUT_PR_NUMBER" \
+          --universe-id "$INPUT_UNIVERSE_ID" \
+          --place-name "$INPUT_PLACE_NAME" \
+          --github-repository "$INPUT_GITHUB_REPOSITORY"
