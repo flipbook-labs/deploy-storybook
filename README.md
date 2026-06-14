@@ -3,30 +3,52 @@
 A GitHub Action that deploys a [Flipbook](https://github.com/flipbook-labs/flipbook)
 storybook to a Roblox experience via Open Cloud.
 
-It's a thin wrapper around
-[`flipbook-cli`](https://github.com/flipbook-labs/flipbook-cli): the action
-installs the CLI for you and maps workflow inputs onto its `deploy` command, so
-you don't have to install or manage the binary yourself.
+Plug in an API key, a universe ID, and a pre-built `.rbxl` — the action handles
+the rest. Uses `ubuntu-latest` or `macos-latest` runners.
 
-## How it installs the CLI
+## Setup
 
-`flipbook-cli` is distributed as a [Rokit](https://github.com/rojo-rbx/rokit)
-tool. Rather than asking you to download a release binary by hand, this action:
+### 1. Create the storybook preview experience
 
-1. Installs Rokit with [`CompeyDev/setup-rokit`](https://github.com/CompeyDev/setup-rokit).
-2. Runs `rokit add --global flipbook-labs/flipbook-cli@<cli-version>`, which puts
-   the CLI on `PATH` for the rest of the job — regardless of working directory.
+1. Navigate to the [Creator Hub](https://create.roblox.com/dashboard/creations) and create a new experience.
+2. Give it a name and publish it.
 
-Pinning happens through the `cli-version` input, so deploys stay reproducible.
+   ![Save Experience dialog](docs/save-experience.png)
 
-> **Runner support:** `flipbook-cli` ships binaries for `linux-x86_64` and
-> `macos-arm64`. Use `ubuntu-latest` (recommended) or `macos-latest` runners.
+3. Copy the **UniverseId** and **PlaceId** — you'll need them later.
+4. Close out of the experience in Studio to avoid "Conflict" errors during deploys.
+5. Navigate to the start place and enable **Direct Access Control > Fully Open**. This is what enables stable, PR-scoped URLs for each deployment.
+
+   ![Direct Access Control settings](docs/direct-access-control.png)
+
+### 2. Create an Open Cloud API key
+
+1. Go to [https://create.roblox.com/dashboard/credentials](https://create.roblox.com/dashboard/credentials).
+2. Click **Create API Key** and give it a name tied to the experience.
+3. Optionally restrict it to that specific experience to reduce blast radius.
+4. Grant it place-publishing access.
+
+   ![API key permissions](docs/api-key-permissions.png)
+
+5. Generate the key and store it somewhere safe.
+
+### 3. Add secrets to your GitHub repository
+
+In your repository's **Settings > Environments** (or **Secrets and variables > Actions**):
+
+| Name                           | Type     | Value                              |
+| ------------------------------ | -------- | ---------------------------------- |
+| `ROBLOX_API_KEY`               | Secret   | The Open Cloud API key from step 2 |
+| `ROBLOX_STORYBOOK_UNIVERSE_ID` | Variable | The UniverseId from step 1         |
+
+### 4. Add the workflow
+
+See [Usage](#usage) below.
 
 ## Usage
 
-The CLI deploys a pre-built `.rbxl` place file that contains your storybooks and
-stories — build it earlier in the job (e.g. with Rojo) and pass its path as
-`place-file`.
+Build your storybook `.rbxl` earlier in the job (e.g. with Rojo) and pass its
+path as `place-file`.
 
 ```yaml
 name: Deploy storybook
@@ -37,15 +59,17 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    environment: production
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
-      # ...build your storybook place file (e.g. `rojo build`) into storybook.rbxl...
+      - name: Build storybook
+        run: rojo build storybook.project.json -o storybook.rbxl
 
       - uses: flipbook-labs/deploy-storybook@v1
         with:
           api-key: ${{ secrets.ROBLOX_API_KEY }}
-          universe-id: ${{ secrets.ROBLOX_STORYBOOK_UNIVERSE_ID }}
+          universe-id: ${{ vars.ROBLOX_STORYBOOK_UNIVERSE_ID }}
           place-name: Flipbook Stories
           place-file: storybook.rbxl
 ```
@@ -58,8 +82,8 @@ Deploy each pull request to its own named place by setting `place-name`:
 - uses: flipbook-labs/deploy-storybook@v1
   with:
     api-key: ${{ secrets.ROBLOX_API_KEY }}
-    universe-id: ${{ secrets.ROBLOX_STORYBOOK_UNIVERSE_ID }}
-    place-name: "Storybook Preview #${{ github.event.number }}"
+    universe-id: ${{ vars.ROBLOX_STORYBOOK_UNIVERSE_ID }}
+    place-name: "PR ${{ github.event.pull_request.number }}"
     place-file: storybook.rbxl
 ```
 
@@ -68,27 +92,26 @@ disambiguate which one to publish to.
 
 ## Inputs
 
-| Input           | Required | Default               | Description                                                                                           |
-| --------------- | -------- | --------------------- | ----------------------------------------------------------------------------------------------------- |
-| `api-key`       | yes      |                       | Roblox Open Cloud API key (passed to the CLI as `ROBLOX_API_KEY`). Pass from a secret.                |
-| `universe-id`   | yes      |                       | Universe (experience) ID to deploy to (`--universe-id`).                                              |
-| `place-name`    | yes      |                       | Name of the place to update or create (`--place-name`), e.g. `Flipbook Stories` or `Storybook Preview`. |
-| `place-file`    | yes      |                       | Path to the built `.rbxl` place file containing your storybooks and stories (`--place-file`).         |
-| `place-id`      | no       |                       | Explicit place ID to publish to (`--place-id`); disambiguates same-named places.                      |
-| `flipbook-rbxm` | no       |                       | Path to a local `Flipbook.rbxm` runtime (`--flipbook-rbxm`); skips downloading Flipbook from GitHub.  |
-| `cli-version`   | no       | `0.5.0`               | `flipbook-cli` version to install (no leading `v`).                                                    |
-| `rokit-version` | no       | `v1.2.0`              | Rokit version to install.                                                                              |
-| `github-token`  | no       | `${{ github.token }}` | Token used by Rokit to download from GitHub releases and by the CLI to fetch the Flipbook runtime.    |
+| Input           | Required | Description                                                                            | Default               |
+| --------------- | -------- | -------------------------------------------------------------------------------------- | --------------------- |
+| `api-key`       | yes      | Roblox Open Cloud API key. Pass from a secret.                                         |                       |
+| `universe-id`   | yes      | Universe (experience) ID to deploy to.                                                 |                       |
+| `place-name`    | yes      | Name of the place to update or create, e.g. `Flipbook Stories` or `Storybook Preview`. |                       |
+| `place-file`    | yes      | Path to the built `.rbxl` place file containing your storybooks and stories.           |                       |
+| `place-id`      | no       | Explicit place ID to publish to; disambiguates same-named places.                      |                       |
+| `flipbook-rbxm` | no       | Path to a local `Flipbook.rbxm` runtime; skips downloading Flipbook from GitHub.       |                       |
+| `cli-version`   | no       | `flipbook-cli` version to install (no leading `v`).                                    | `0.6.0`               |
+| `rokit-version` | no       | Rokit version to install.                                                              | `v1.2.0`              |
+| `github-token`  | no       | Token used to authenticate downloads from GitHub Releases.                             | `${{ github.token }}` |
 
-## Required secrets
+## Required secrets and variables
 
-Create these in your repository settings and reference them as shown above:
+We recommend creating a [GitHub Environment](https://docs.github.com/en/actions/deployment/targeting-different-deployment-environments/using-environments-for-deployment)
+(e.g. `storybook-preview`) and storing these there:
 
-| Secret                         | Description                  |
-| ------------------------------ | ---------------------------- |
-| `ROBLOX_API_KEY`               | Open Cloud API key           |
-| `ROBLOX_STORYBOOK_UNIVERSE_ID` | Universe (experience) ID     |
+| Name                           | Type     | Description              |
+| ------------------------------ | -------- | ------------------------ |
+| `ROBLOX_API_KEY`               | Secret   | Open Cloud API key       |
+| `ROBLOX_STORYBOOK_UNIVERSE_ID` | Variable | Universe (experience) ID |
 
-The API key needs Open Cloud place-publishing access for the target universe.
-See the [flipbook-cli README](https://github.com/flipbook-labs/flipbook-cli) for
-details on creating the experience and key.
+See [Setup](#setup) for step-by-step instructions.

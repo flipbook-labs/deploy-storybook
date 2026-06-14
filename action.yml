@@ -3,12 +3,11 @@ description: >-
   Deploy a Flipbook storybook to a Roblox experience via Open Cloud, using
   flipbook-cli. Installs the CLI for you with Rokit — no manual setup required.
 author: flipbook-labs
-
 inputs:
   api-key:
     description: >-
       Roblox Open Cloud API key. Required to publish. Supplied to the CLI as the
-      ROBLOX_API_KEY env var. Pass from a secret, e.g. ${{ secrets.ROBLOX_API_KEY }}.
+      ROBLOX_API_KEY env var.
     required: true
   universe-id:
     description: Universe (experience) ID to deploy to. Maps to --universe-id.
@@ -44,7 +43,7 @@ inputs:
       Version of flipbook-labs/flipbook-cli to install via Rokit (no leading
       "v"). Pin this to keep deploys reproducible.
     required: false
-    default: "0.5.0"
+    default: "0.6.0"
   rokit-version:
     description: Version of Rokit to install (git tag, e.g. v1.2.0).
     required: false
