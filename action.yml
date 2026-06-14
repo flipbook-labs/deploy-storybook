@@ -67,10 +67,35 @@ runs:
   using: composite
   steps:
     - name: Install Rokit
-      uses: CompeyDev/setup-rokit@1d9390883f7ebce19d48f5b8d006e11d387c92ab # v0.2.1
-      with:
-        version: ${{ inputs.rokit-version }}
-        token: ${{ inputs.github-token }}
+      shell: bash
+      env:
+        ROKIT_VERSION: ${{ inputs.rokit-version }}
+        GITHUB_TOKEN: ${{ inputs.github-token }}
+      run: |
+        set -euo pipefail
+
+        # Install Rokit only if not already on PATH (e.g. from a prior setup-rokit step).
+        if ! command -v rokit &>/dev/null && ! [ -x "$HOME/.rokit/bin/rokit" ]; then
+          curl --proto '=https' --tlsv1.2 -sSf \
+            https://raw.githubusercontent.com/rojo-rbx/rokit/main/scripts/install.sh \
+            | GITHUB_PAT="$GITHUB_TOKEN" bash
+        fi
+        echo "$HOME/.rokit/bin" >> "$GITHUB_PATH"
+
+        # Authenticate Rokit with GitHub. Silently ignore if a prior setup-rokit step
+        # in the caller's workflow already authenticated; fail on any other error.
+        set +e
+        auth_output=$("$HOME/.rokit/bin/rokit" authenticate github --token "$GITHUB_TOKEN" 2>&1)
+        auth_exit=$?
+        set -e
+        if [ "$auth_exit" -ne 0 ]; then
+          if echo "$auth_output" | grep -q "already exists"; then
+            echo "Rokit already authenticated with GitHub, skipping"
+          else
+            echo "$auth_output" >&2
+            exit 1
+          fi
+        fi
 
     - name: Install flipbook-cli
       shell: bash
