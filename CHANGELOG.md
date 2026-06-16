@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 
 
+## v0.3.2
+
+### Changes
+
+- Fix CI failure from attempting to install flipbook-cli with the trust check (#17) ([49cdc33](https://github.com/flipbook-labs/deploy-storybook/commit/49cdc337f5f07d58896b08d35f0672dbe61eb4a6))
+
+
+
 ## v0.3.1
 
 ### Changes
