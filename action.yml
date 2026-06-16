@@ -85,7 +85,7 @@ runs:
       shell: bash
       env:
         CLI_VERSION: ${{ inputs.cli-version }}
-      run: rokit add --global "flipbook-labs/flipbook-cli@$CLI_VERSION"
+      run: rokit add --global --no-trust-check "flipbook-labs/flipbook-cli@$CLI_VERSION"
 
     - name: Deploy
       shell: bash
