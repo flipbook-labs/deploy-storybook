@@ -66,6 +66,15 @@ inputs:
 runs:
   using: composite
   steps:
+    - name: Save and clear rokit auth
+      shell: bash
+      run: |
+        set -euo pipefail
+        if [ -f "$HOME/.rokit/auth.toml" ]; then
+          cp "$HOME/.rokit/auth.toml" "$HOME/.rokit/auth.toml.deploy-storybook-bak"
+          rokit authenticate github --remove 2>/dev/null || true
+        fi
+
     - name: Install Rokit
       uses: CompeyDev/setup-rokit@1d9390883f7ebce19d48f5b8d006e11d387c92ab # v0.2.1
       with:
@@ -122,3 +131,14 @@ runs:
           --universe-id "$INPUT_UNIVERSE_ID" \
           --place-name "$INPUT_PLACE_NAME" \
           --github-repository "$INPUT_GITHUB_REPOSITORY"
+
+    - name: Restore rokit auth
+      if: always()
+      shell: bash
+      run: |
+        set -euo pipefail
+        if [ -f "$HOME/.rokit/auth.toml.deploy-storybook-bak" ]; then
+          mv "$HOME/.rokit/auth.toml.deploy-storybook-bak" "$HOME/.rokit/auth.toml"
+        else
+          rm -f "$HOME/.rokit/auth.toml"
+        fi
