@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 
 
+## v0.3.1
+
+### Changes
+
+- Fix Rokit double-authentication when used alongside setup-rokit (#15) ([a448ef4](https://github.com/flipbook-labs/deploy-storybook/commit/a448ef4c97a5ea6aa8d39ac3bfe2345736d0f294))
+
+
+
 ## v0.3.0
 
 ### Changes
