@@ -86,6 +86,7 @@ runs:
       env:
         CLI_VERSION: ${{ inputs.cli-version }}
       run: |
+        set -euo pipefail
         rokit trust "flipbook-labs/flipbook-cli"
         rokit add --global "flipbook-labs/flipbook-cli@$CLI_VERSION"
 
