@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 
 
+## v0.4.0
+
+### Changes
+
+- Fix rokit add by trusting flipbook-cli first (#19) ([4fcfc95](https://github.com/flipbook-labs/deploy-storybook/commit/4fcfc95ca4133f589e730d3ed14383158675cf4c))
+
+
+
 ## v0.3.2
 
 ### Changes
