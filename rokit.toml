@@ -4,4 +4,3 @@
 # New tools can be added by running `rokit add <tool>` in a terminal.
 
 [tools]
-git-cliff = "orhun/git-cliff@2.13.1"
