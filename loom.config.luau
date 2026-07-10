@@ -13,5 +13,12 @@ return {
 	package = {
 		name = "deploy-storybook",
 		version = "0.4.0",
+		dev_dependencies = {
+			AgentSkills = {
+				rev = "v0.4.0",
+				sourceKind = "github",
+				source = "https://github.com/flipbook-labs/agent-skills",
+			},
+		},
 	},
 }
