@@ -104,6 +104,7 @@ jobs:
           universe-id: ${{ vars.ROBLOX_STORYBOOK_UNIVERSE_ID }}
           place-name: "PR ${{ github.event.pull_request.number }}"
           place-file: storybook.rbxl
+          launch-data: '{"search":"Button|Dialog"}'
 ```
 
 To disable the comment, pass `comment: 'false'`. If you keep multiple places
@@ -124,6 +125,7 @@ publish to.
 | `rokit-version` | no       | Rokit version to install.                                                              | `v1.2.0`              |
 | `github-token`  | no       | Token used to authenticate downloads from GitHub Releases and to post PR comments.     | `${{ github.token }}` |
 | `comment`       | no       | Post a preview comment on the PR after deploy. Requires `pull-requests: write`.        | `'true'`              |
+| `launch-data`   | no       | JSON object to include as launch data in the preview comment's launch link.             |                       |
 
 ## Required secrets and variables
 
