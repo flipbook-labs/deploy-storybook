@@ -37,13 +37,19 @@ inputs:
       skips downloading the latest Flipbook from GitHub. Maps to --flipbook-rbxm.
     required: false
     default: ""
+  current-flipbook-rbxm:
+    description: >-
+      Optional path to Flipbook.rbxm built from the current pull request. The
+      action deploys it to a second place and adds both runtimes to one comment.
+    required: false
+    default: ""
 
   cli-version:
     description: >-
       Version of flipbook-labs/flipbook-cli to install via Rokit (no leading
       "v"). Pin this to keep deploys reproducible.
     required: false
-    default: "0.7.0"
+    default: "0.8.0"
   rokit-version:
     description: Version of Rokit to install (git tag, e.g. v1.2.0).
     required: false
@@ -106,6 +112,7 @@ runs:
         INPUT_PLACE_FILE: ${{ inputs.place-file }}
         INPUT_PLACE_ID: ${{ inputs.place-id }}
         INPUT_FLIPBOOK_RBXM: ${{ inputs.flipbook-rbxm }}
+        INPUT_CURRENT_FLIPBOOK_RBXM: ${{ inputs.current-flipbook-rbxm }}
       run: |
         set -euo pipefail
 
@@ -124,7 +131,15 @@ runs:
 
         flipbook-cli "${args[@]}"
 
-    - name: Comment preview link on PR
+        if [[ -n "$INPUT_CURRENT_FLIPBOOK_RBXM" ]]; then
+          flipbook-cli deploy \
+            --universe-id "$INPUT_UNIVERSE_ID" \
+            --place-name "$INPUT_PLACE_NAME Current Flipbook" \
+            --place-file "$INPUT_PLACE_FILE" \
+            --flipbook-rbxm "$INPUT_CURRENT_FLIPBOOK_RBXM"
+        fi
+
+    - name: Comment preview on PR
       if: ${{ inputs.comment == 'true' && github.event_name == 'pull_request' }}
       shell: bash
       env:
@@ -135,6 +150,7 @@ runs:
         INPUT_PR_NUMBER: ${{ github.event.pull_request.number }}
         INPUT_GITHUB_REPOSITORY: ${{ github.repository }}
         INPUT_LAUNCH_DATA: ${{ inputs.launch-data }}
+        INPUT_CURRENT_FLIPBOOK_RBXM: ${{ inputs.current-flipbook-rbxm }}
       run: |
         set -euo pipefail
 
@@ -147,6 +163,9 @@ runs:
 
         if [[ -n "$INPUT_LAUNCH_DATA" ]]; then
           args+=(--launch-data "$INPUT_LAUNCH_DATA")
+        fi
+        if [[ -n "$INPUT_CURRENT_FLIPBOOK_RBXM" ]]; then
+          args+=(--current-place-name "$INPUT_PLACE_NAME Current Flipbook")
         fi
 
         flipbook-cli "${args[@]}"
