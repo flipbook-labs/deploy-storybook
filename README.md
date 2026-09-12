@@ -111,7 +111,7 @@ jobs:
           launch-data: '{"search":"Button|Dialog"}'
 ```
 
-`current-flipbook-rbxm` deploys a second place containing the supplied Flipbook build. The preview comment presents the latest release and current pull request runtimes together for comparison.
+`current-flipbook-rbxm` deploys a second place containing the supplied Flipbook build. The preview comment presents the latest release and current pull request runtimes together for comparison. It cannot be combined with `flipbook-rbxm`, which replaces the primary place's released runtime.
 
 To disable the comment, pass `comment: 'false'`. If you keep multiple places
 with the same name, pass an explicit `place-id` to disambiguate which one to

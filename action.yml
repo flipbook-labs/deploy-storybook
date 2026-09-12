@@ -116,6 +116,11 @@ runs:
       run: |
         set -euo pipefail
 
+        if [[ -n "$INPUT_FLIPBOOK_RBXM" && -n "$INPUT_CURRENT_FLIPBOOK_RBXM" ]]; then
+          echo "flipbook-rbxm and current-flipbook-rbxm cannot be used together" >&2
+          exit 1
+        fi
+
         args=(deploy
           --universe-id "$INPUT_UNIVERSE_ID"
           --place-name "$INPUT_PLACE_NAME"
