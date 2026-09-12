@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 
 
+## v0.4.1
+
+### Changes
+
+- Require every pull request to include a `.changes/` entry: CI now runs `changewrite check` and fails when no unreleased entry is present.
+
+- Release automation reads the public Flipbook Backend App Client ID from an organization variable.
+
+### Dependencies
+
+- Add AgentSkills `v0.4.0` as a dev dependency so agents can bootstrap the shared skills library.
+
+### Internal
+
+- Upgrade the Changewrite release action to `v0.7.0` and adopt its `publish-lock` check.
+
+
 ## v0.4.0
 
 ### Changes
@@ -52,4 +69,3 @@ All notable changes to this project will be documented in this file.
 - Add Flipbook storybook deploy action (#1) ([8d46a13](https://github.com/flipbook-labs/deploy-storybook/commit/8d46a132dd9b998b8de40a8cdcb91af4c61cc397))
 
 - First commit ([60f8cc3](https://github.com/flipbook-labs/deploy-storybook/commit/60f8cc3b225e21eb7b98fe721ec99598b8518720))
-

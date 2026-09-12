@@ -12,7 +12,7 @@
 return {
 	package = {
 		name = "deploy-storybook",
-		version = "0.4.0",
+		version = "0.4.1",
 		dev_dependencies = {
 			AgentSkills = {
 				rev = "v0.4.0",
