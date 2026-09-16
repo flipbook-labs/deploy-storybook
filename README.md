@@ -121,7 +121,7 @@ publish to.
 | `place-file`    | yes      | Path to the built `.rbxl` place file containing your storybooks and stories.           |                       |
 | `place-id`      | no       | Explicit place ID to publish to; disambiguates same-named places.                      |                       |
 | `flipbook-rbxm` | no       | Path to a local `Flipbook.rbxm` runtime; skips downloading Flipbook from GitHub.       |                       |
-| `cli-version`   | no       | `flipbook-cli` version to install (no leading `v`).                                    | `0.6.0`               |
+| `cli-version`   | no       | `flipbook-cli` version to install (no leading `v`).                                    | `0.7.0`               |
 | `rokit-version` | no       | Rokit version to install.                                                              | `v1.2.0`              |
 | `github-token`  | no       | Token used to authenticate downloads from GitHub Releases and to post PR comments.     | `${{ github.token }}` |
 | `comment`       | no       | Post a preview comment on the PR after deploy. Requires `pull-requests: write`.        | `'true'`              |
