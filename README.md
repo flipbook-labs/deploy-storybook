@@ -98,14 +98,20 @@ jobs:
       - name: Build storybook
         run: rojo build storybook.project.json -o storybook.rbxl
 
+      - name: Build Flipbook
+        run: lute run build plugin --channel prod --skip-reload --clean
+
       - uses: flipbook-labs/deploy-storybook@v1
         with:
           api-key: ${{ secrets.ROBLOX_API_KEY }}
           universe-id: ${{ vars.ROBLOX_STORYBOOK_UNIVERSE_ID }}
           place-name: "PR ${{ github.event.pull_request.number }}"
           place-file: storybook.rbxl
+          current-flipbook-rbxm: build/prod/Flipbook.rbxm
           launch-data: '{"search":"Button|Dialog"}'
 ```
+
+`current-flipbook-rbxm` deploys a second place containing the supplied Flipbook build. The preview comment presents the latest release and current pull request runtimes together for comparison. It cannot be combined with `flipbook-rbxm`, which replaces the primary place's released runtime.
 
 To disable the comment, pass `comment: 'false'`. If you keep multiple places
 with the same name, pass an explicit `place-id` to disambiguate which one to
@@ -113,19 +119,20 @@ publish to.
 
 ## Inputs
 
-| Input           | Required | Description                                                                            | Default               |
-| --------------- | -------- | -------------------------------------------------------------------------------------- | --------------------- |
-| `api-key`       | yes      | Roblox Open Cloud API key. Pass from a secret.                                         |                       |
-| `universe-id`   | yes      | Universe (experience) ID to deploy to.                                                 |                       |
-| `place-name`    | yes      | Name of the place to update or create, e.g. `Flipbook Stories` or `Storybook Preview`. |                       |
-| `place-file`    | yes      | Path to the built `.rbxl` place file containing your storybooks and stories.           |                       |
-| `place-id`      | no       | Explicit place ID to publish to; disambiguates same-named places.                      |                       |
-| `flipbook-rbxm` | no       | Path to a local `Flipbook.rbxm` runtime; skips downloading Flipbook from GitHub.       |                       |
-| `cli-version`   | no       | `flipbook-cli` version to install (no leading `v`).                                    | `0.6.0`               |
-| `rokit-version` | no       | Rokit version to install.                                                              | `v1.2.0`              |
-| `github-token`  | no       | Token used to authenticate downloads from GitHub Releases and to post PR comments.     | `${{ github.token }}` |
-| `comment`       | no       | Post a preview comment on the PR after deploy. Requires `pull-requests: write`.        | `'true'`              |
-| `launch-data`   | no       | JSON object to include as launch data in the preview comment's launch link.             |                       |
+| Input                   | Required | Description                                                                            | Default               |
+| ----------------------- | -------- | -------------------------------------------------------------------------------------- | --------------------- |
+| `api-key`               | yes      | Roblox Open Cloud API key. Pass from a secret.                                         |                       |
+| `universe-id`           | yes      | Universe ID to deploy to.                                                              |                       |
+| `place-name`            | yes      | Name of the place to update or create, e.g. `Flipbook Stories` or `Storybook Preview`. |                       |
+| `place-file`            | yes      | Path to the built `.rbxl` place file containing your stories.                          |                       |
+| `place-id`              | no       | Explicit place ID to publish to.                                                       |                       |
+| `flipbook-rbxm`         | no       | Local `Flipbook.rbxm` runtime for the primary place.                                   |                       |
+| `current-flipbook-rbxm` | no       | Flipbook build from the pull request for a second comparison place.                    |                       |
+| `cli-version`           | no       | `flipbook-cli` version to install.                                                     | `0.8.0`               |
+| `rokit-version`         | no       | Rokit version to install.                                                              | `v1.2.0`              |
+| `github-token`          | no       | Token used for GitHub downloads and preview comments.                                  | `${{ github.token }}` |
+| `comment`               | no       | Post a preview comment on the pull request.                                            | `'true'`              |
+| `launch-data`           | no       | JSON object to include in each preview launch link.                                    |                       |
 
 ## Required secrets and variables
 
