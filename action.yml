@@ -43,7 +43,7 @@ inputs:
       Version of flipbook-labs/flipbook-cli to install via Rokit (no leading
       "v"). Pin this to keep deploys reproducible.
     required: false
-    default: "0.6.0"
+    default: "0.7.0"
   rokit-version:
     description: Version of Rokit to install (git tag, e.g. v1.2.0).
     required: false
@@ -62,6 +62,12 @@ inputs:
       events. Requires pull-requests: write permission on the workflow's token.
     required: false
     default: 'true'
+  launch-data:
+    description: >-
+      JSON object to include as launch data in the preview comment's launch
+      link. Has no effect when comments are disabled.
+    required: false
+    default: ""
 
 runs:
   using: composite
@@ -128,12 +134,22 @@ runs:
         INPUT_PLACE_NAME: ${{ inputs.place-name }}
         INPUT_PR_NUMBER: ${{ github.event.pull_request.number }}
         INPUT_GITHUB_REPOSITORY: ${{ github.repository }}
+        INPUT_LAUNCH_DATA: ${{ inputs.launch-data }}
       run: |
-        flipbook-cli comment \
-          --pr "$INPUT_PR_NUMBER" \
-          --universe-id "$INPUT_UNIVERSE_ID" \
-          --place-name "$INPUT_PLACE_NAME" \
+        set -euo pipefail
+
+        args=(comment
+          --pr "$INPUT_PR_NUMBER"
+          --universe-id "$INPUT_UNIVERSE_ID"
+          --place-name "$INPUT_PLACE_NAME"
           --github-repository "$INPUT_GITHUB_REPOSITORY"
+        )
+
+        if [[ -n "$INPUT_LAUNCH_DATA" ]]; then
+          args+=(--launch-data "$INPUT_LAUNCH_DATA")
+        fi
+
+        flipbook-cli "${args[@]}"
 
     - name: Restore rokit auth
       if: always()
