@@ -63,10 +63,10 @@ inputs:
     required: false
     default: 'true'
   launch-data:
-    required: false
     description: >-
       JSON object to include as launch data in the preview comment's launch
       link. Has no effect when comments are disabled.
+    required: false
     default: ""
 
 runs:
