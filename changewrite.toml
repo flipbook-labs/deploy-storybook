@@ -1,5 +1,17 @@
+categories = ["Features", "Changes", "Fixes", "Dependencies", "Internal"]
+collapsed = ["Dependencies", "Internal"]
+
 [version]
 current = "0.4.0"
 mirror = [
   { file = "pkg.luau" },
 ]
+
+[kind]
+setup = { text = "Setup", color = "#5b5bd6" }
+deploy = { text = "Deploy", color = "#1a7f37" }
+comment = { text = "PR comment", color = "#0969da" }
+docs = { text = "Docs", color = "#8a5a2b" }
+packages = { text = "Packages", color = "#7a7444" }
+ci = { text = "CI", color = "#75659a" }
+release = { text = "Release", color = "#94606f" }
