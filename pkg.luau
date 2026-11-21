@@ -6,7 +6,7 @@ return {
 		name = "deploy-storybook",
 		version = "0.4.1",
 		dev_dependencies = {
-			AgentSkills = {
+			["agent-skills"] = {
 				rev = "v0.7.0",
 				sourceKind = "github",
 				source = "https://github.com/flipbook-labs/agent-skills",
