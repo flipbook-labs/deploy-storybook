@@ -1,54 +1,39 @@
-# deploy-storybook
+# DeployStorybook
 
-A GitHub Action that deploys a [Flipbook](https://github.com/flipbook-labs/flipbook)
-storybook to a Roblox experience via Open Cloud.
+DeployStorybook publishes a [Flipbook](https://github.com/flipbook-labs/flipbook) storybook to a Roblox experience through Open Cloud. Your workflow builds the storybook into a `.rbxl` place file, and the action publishes it. It runs on `ubuntu-latest` and `macos-latest` runners.
 
-Plug in an API key, a universe ID, and a pre-built `.rbxl` — the action handles
-the rest. Uses `ubuntu-latest` or `macos-latest` runners.
+On pull requests, it can publish each one to its own place and comment the preview link on the pull request.
 
-## Setup
+## Install
 
-### 1. Create the storybook preview experience
+Add the action to a workflow:
 
-1. Navigate to the [Creator Hub](https://create.roblox.com/dashboard/creations) and create a new experience.
-2. Give it a name and publish it.
+```yaml
+- uses: flipbook-labs/deploy-storybook@v0.4.1
+```
+
+## Use
+
+### One-time setup
+
+1. Create an experience in the [Creator Hub](https://create.roblox.com/dashboard/creations) and publish it. Copy its **UniverseId**.
 
    ![Save Experience dialog](docs/save-experience.png)
 
-3. Copy the **UniverseId** and **PlaceId** — you'll need them later.
-4. Close out of the experience in Studio to avoid "Conflict" errors during deploys.
-5. Navigate to the start place and enable **Direct Access Control > Fully Open**. This is what enables stable, PR-scoped URLs for each deployment.
+2. Close the experience in Studio. An open session causes "Conflict" errors during deploys.
+3. In the start place, enable **Direct Access Control > Fully Open**. This gives each deployment a stable, PR-scoped URL.
 
    ![Direct Access Control settings](docs/direct-access-control.png)
 
-### 2. Create an Open Cloud API key
-
-1. Go to [https://create.roblox.com/dashboard/credentials](https://create.roblox.com/dashboard/credentials).
-2. Click **Create API Key** and give it a name tied to the experience.
-3. Optionally restrict it to that specific experience to reduce blast radius.
-4. Grant it place-publishing access.
+4. Create an [Open Cloud API key](https://create.roblox.com/dashboard/credentials) with place-publishing access. Restrict it to this experience if you can.
 
    ![API key permissions](docs/api-key-permissions.png)
 
-5. Generate the key and store it somewhere safe.
+5. In your repository, create a [GitHub Environment](https://docs.github.com/en/actions/how-tos/deploy/configure-and-manage-deployments/manage-environments) named `storybook`. Store the key as the secret `ROBLOX_API_KEY` and the UniverseId as the variable `ROBLOX_STORYBOOK_UNIVERSE_ID`. An environment keeps these out of reach of jobs that don't name it.
 
-### 3. Add secrets to your GitHub repository
+### Workflow
 
-In your repository's **Settings > Environments** (or **Secrets and variables > Actions**):
-
-| Name                           | Type     | Value                              |
-| ------------------------------ | -------- | ---------------------------------- |
-| `ROBLOX_API_KEY`               | Secret   | The Open Cloud API key from step 2 |
-| `ROBLOX_STORYBOOK_UNIVERSE_ID` | Variable | The UniverseId from step 1         |
-
-### 4. Add the workflow
-
-See [Usage](#usage) below.
-
-## Usage
-
-Build your storybook `.rbxl` earlier in the job (e.g. with Rojo) and pass its
-path as `place-file`.
+Build the storybook with Rojo, then pass the file to the action. The job's `environment` gives it the secret and variable from setup.
 
 ```yaml
 name: Deploy storybook
@@ -59,14 +44,14 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    environment: production
+    environment: storybook
     steps:
       - uses: actions/checkout@v6
 
       - name: Build storybook
         run: rojo build storybook.project.json -o storybook.rbxl
 
-      - uses: flipbook-labs/deploy-storybook@v1
+      - uses: flipbook-labs/deploy-storybook@v0.4.1
         with:
           api-key: ${{ secrets.ROBLOX_API_KEY }}
           universe-id: ${{ vars.ROBLOX_STORYBOOK_UNIVERSE_ID }}
@@ -74,11 +59,9 @@ jobs:
           place-file: storybook.rbxl
 ```
 
-### Per-PR preview deploys
+## Previews
 
-Deploy each pull request to its own named place and get an automatic comment
-with preview links. Add `pull-requests: write` so the action can post the
-comment:
+Deploy each pull request to its own place and have the action comment the preview link. Add `pull-requests: write` so the action can post the comment:
 
 ```yaml
 name: Deploy storybook
@@ -91,14 +74,14 @@ permissions:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    environment: storybook-preview
+    environment: storybook
     steps:
       - uses: actions/checkout@v6
 
       - name: Build storybook
         run: rojo build storybook.project.json -o storybook.rbxl
 
-      - uses: flipbook-labs/deploy-storybook@v1
+      - uses: flipbook-labs/deploy-storybook@v0.4.1
         with:
           api-key: ${{ secrets.ROBLOX_API_KEY }}
           universe-id: ${{ vars.ROBLOX_STORYBOOK_UNIVERSE_ID }}
@@ -106,9 +89,9 @@ jobs:
           place-file: storybook.rbxl
 ```
 
-To disable the comment, pass `comment: 'false'`. If you keep multiple places
-with the same name, pass an explicit `place-id` to disambiguate which one to
-publish to.
+GitHub does not pass secrets to pull requests from forks, so previews deploy only for branches in this repository.
+
+To turn off the comment, pass `comment: 'false'`. If you keep several places with the same name, pass `place-id` to choose one.
 
 ## Inputs
 
@@ -125,14 +108,10 @@ publish to.
 | `github-token`  | no       | Token used to authenticate downloads from GitHub Releases and to post PR comments.     | `${{ github.token }}` |
 | `comment`       | no       | Post a preview comment on the PR after deploy. Requires `pull-requests: write`.        | `'true'`              |
 
-## Required secrets and variables
+## Contributing
 
-We recommend creating a [GitHub Environment](https://docs.github.com/en/actions/deployment/targeting-different-deployment-environments/using-environments-for-deployment)
-(e.g. `storybook-preview`) and storing these there:
+See [CONTRIBUTING.md](CONTRIBUTING.md).
 
-| Name                           | Type     | Description              |
-| ------------------------------ | -------- | ------------------------ |
-| `ROBLOX_API_KEY`               | Secret   | Open Cloud API key       |
-| `ROBLOX_STORYBOOK_UNIVERSE_ID` | Variable | Universe (experience) ID |
+## License
 
-See [Setup](#setup) for step-by-step instructions.
+MIT.
