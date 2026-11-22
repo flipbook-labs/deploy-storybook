@@ -5,6 +5,9 @@ collapsed = ["Dependencies", "Internal"]
 current = "0.4.1"
 mirror = [
   { file = "pkg.luau" },
+  { file = "README.md", pattern = "\n%- uses: flipbook%-labs/deploy%-storybook@v([%d%.]+)" },
+  { file = "README.md", pattern = "\n +%- uses: flipbook%-labs/deploy%-storybook@v([%d%.]+)\n[^\n]*\n[^\n]*\n[^\n]*\n[^\n]*place%-name: Flipbook" },
+  { file = "README.md", pattern = "\n +%- uses: flipbook%-labs/deploy%-storybook@v([%d%.]+)\n[^\n]*\n[^\n]*\n[^\n]*\n[^\n]*place%-name: \"PR" },
 ]
 
 [kind]
