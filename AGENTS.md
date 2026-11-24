@@ -39,5 +39,5 @@ Skills are living documents. When your work here contradicts a skill (a renamed 
 
 - Toolchain is managed with [Rokit](https://github.com/rojo-rbx/rokit). Run `rokit install` once to get `lute`, `luau-lsp`, `stylua`, and `selene` on PATH.
 - The action is defined in [`action.yml`](action.yml), and usage is documented in [`README.md`](README.md) and [`docs/`](docs). There is no build step; changes to the action take effect through the composite steps in `action.yml`.
-- The version lives in [`changewrite.toml`](changewrite.toml) and is mirrored into [`pkg.luau`](pkg.luau).
+- The version lives in [`changewrite.luau`](changewrite.luau) and is mirrored into [`pkg.luau`](pkg.luau).
 - Releases are handled by the [Changewrite](https://github.com/flipbook-labs/changewrite) action. Unreleased entries live as partials in [`.changes/`](.changes) and are assembled into [`CHANGELOG.md`](CHANGELOG.md) at release time. Add a `.changes/` entry for any user-facing change.
