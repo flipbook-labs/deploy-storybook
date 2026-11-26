@@ -108,7 +108,7 @@ To turn off the comment, pass `comment: 'false'`. If you keep several places wit
 | `rokit-version` | no       | Rokit version to install.                                                              | `v1.2.0`              |
 | `github-token`  | no       | Token used to authenticate downloads from GitHub Releases and to post PR comments.     | `${{ github.token }}` |
 | `comment`       | no       | Post a preview comment on the PR after deploy. Requires `pull-requests: write`.        | `'true'`              |
-| `launch-data`   | no       | JSON object to include as launch data in the preview comment's launch link.             |                       |
+| `launch-data`   | no       | JSON object to include as launch data in the preview comment's launch link.            |                       |
 
 ## Contributing
 
