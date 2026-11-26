@@ -3,6 +3,32 @@
 All notable changes to this project will be documented in this file.
 
 
+## v0.4.1
+
+Changes 3 · Dependencies 1 · Internal 2
+
+### Changes
+
+1. <picture><source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/flipbook-labs/deploy-storybook/main/.changes/assets/kind-ci-dark.svg"><source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/flipbook-labs/deploy-storybook/main/.changes/assets/kind-ci-light.svg"><img src="https://raw.githubusercontent.com/flipbook-labs/deploy-storybook/main/.changes/assets/kind-ci-light.png" alt="CI" height="18" align="texttop"></picture> Require every pull request to include a `.changes/` entry: CI now runs `changewrite check` and fails when no unreleased entry is present. ([#23](https://github.com/flipbook-labs/deploy-storybook/pull/23))
+2. <picture><source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/flipbook-labs/deploy-storybook/main/.changes/assets/kind-release-dark.svg"><source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/flipbook-labs/deploy-storybook/main/.changes/assets/kind-release-light.svg"><img src="https://raw.githubusercontent.com/flipbook-labs/deploy-storybook/main/.changes/assets/kind-release-light.png" alt="Release" height="18" align="texttop"></picture> Release automation reads the public Flipbook Backend App Client ID from an organization variable. ([#29](https://github.com/flipbook-labs/deploy-storybook/pull/29))
+3. <picture><source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/flipbook-labs/deploy-storybook/main/.changes/assets/kind-packages-dark.svg"><source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/flipbook-labs/deploy-storybook/main/.changes/assets/kind-packages-light.svg"><img src="https://raw.githubusercontent.com/flipbook-labs/deploy-storybook/main/.changes/assets/kind-packages-light.png" alt="Packages" height="18" align="texttop"></picture> Declare the shared skills dev dependency in `pkg.luau` on Lute `1.0.1-nightly.20261115`. ([#31](https://github.com/flipbook-labs/deploy-storybook/pull/31))
+
+<details>
+<summary>Dependencies (1)</summary>
+
+1. <picture><source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/flipbook-labs/deploy-storybook/main/.changes/assets/kind-packages-dark.svg"><source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/flipbook-labs/deploy-storybook/main/.changes/assets/kind-packages-light.svg"><img src="https://raw.githubusercontent.com/flipbook-labs/deploy-storybook/main/.changes/assets/kind-packages-light.png" alt="Packages" height="18" align="texttop"></picture> Add AgentSkills `v0.7.0` as a dev dependency so agents can bootstrap the shared skills library. ([#26](https://github.com/flipbook-labs/deploy-storybook/pull/26))
+
+</details>
+
+<details>
+<summary>Internal (2)</summary>
+
+1. <picture><source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/flipbook-labs/deploy-storybook/main/.changes/assets/kind-release-dark.svg"><source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/flipbook-labs/deploy-storybook/main/.changes/assets/kind-release-light.svg"><img src="https://raw.githubusercontent.com/flipbook-labs/deploy-storybook/main/.changes/assets/kind-release-light.png" alt="Release" height="18" align="texttop"></picture> Upgrade the Changewrite release action to `v0.7.0` and adopt its `publish-lock` check. ([#26](https://github.com/flipbook-labs/deploy-storybook/pull/26))
+2. <picture><source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/flipbook-labs/deploy-storybook/main/.changes/assets/kind-release-dark.svg"><source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/flipbook-labs/deploy-storybook/main/.changes/assets/kind-release-light.svg"><img src="https://raw.githubusercontent.com/flipbook-labs/deploy-storybook/main/.changes/assets/kind-release-light.png" alt="Release" height="18" align="texttop"></picture> Configure Changewrite kinds so release notes show where each change landed, and collapse the Dependencies and Internal sections. ([#32](https://github.com/flipbook-labs/deploy-storybook/pull/32))
+
+</details>
+
+
 ## v0.4.0
 
 ### Changes
@@ -52,4 +78,3 @@ All notable changes to this project will be documented in this file.
 - Add Flipbook storybook deploy action (#1) ([8d46a13](https://github.com/flipbook-labs/deploy-storybook/commit/8d46a132dd9b998b8de40a8cdcb91af4c61cc397))
 
 - First commit ([60f8cc3](https://github.com/flipbook-labs/deploy-storybook/commit/60f8cc3b225e21eb7b98fe721ec99598b8518720))
-

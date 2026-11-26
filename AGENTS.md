@@ -9,18 +9,12 @@ Complete every step below before you write any code, tests, changelog entries, o
 1. Install the toolchain and dependencies:
 
    ```sh
-   rokit install && lute pkg install
+   rokit install && lute pkg install --vendor
    ```
 
-   `rokit install` puts `lute`, `luau-lsp`, `stylua`, and `selene` on PATH. `lute pkg install` fetches the Loom dependencies into `~/.loom/store`. The shared skills library is a dev dependency, so it lands in `~/.loom/store` for you to read. Without this step the skills are not on disk.
+   `rokit install` puts `lute`, `luau-lsp`, `stylua`, and `selene` on PATH. `lute pkg install --vendor` copies each dependency in [`pkg.luau`](pkg.luau) into a gitignored `.lpm/<key>@<rev>` folder. The shared skills library is a dev dependency, so it lands in `.lpm/` for you to read. Without this step the skills are not on disk.
 
-2. Resolve the concrete skills path from the pinned version (do not guess it):
-
-   ```sh
-   ls -d ~/.loom/store/AgentSkills@*
-   ```
-
-   The store can hold more than one version, so match the `rev` pinned for `AgentSkills` in [`loom.config.luau`](loom.config.luau): the path is `~/.loom/store/AgentSkills@<rev>`. Use it wherever `<skills>` appears below, and ignore any other versions the listing prints.
+2. Find the skills folder: it's `.lpm/agent-skills@<rev>`, where `<rev>` is the `agent-skills` rev in [`pkg.luau`](pkg.luau). Use that path wherever `<skills>` appears below.
 
 3. Read the routing index at `<skills>/AGENTS.md` in full. Its **Project Skills** section lists every skill with a trigger-rich one-liner, so you know what exists before you start. This read is unconditional.
 
@@ -45,5 +39,5 @@ Skills are living documents. When your work here contradicts a skill (a renamed 
 
 - Toolchain is managed with [Rokit](https://github.com/rojo-rbx/rokit). Run `rokit install` once to get `lute`, `luau-lsp`, `stylua`, and `selene` on PATH.
 - The action is defined in [`action.yml`](action.yml), and usage is documented in [`README.md`](README.md) and [`docs/`](docs). There is no build step; changes to the action take effect through the composite steps in `action.yml`.
-- The version lives in [`changewrite.toml`](changewrite.toml) and is mirrored into [`loom.config.luau`](loom.config.luau); the release lifecycle reads it from there.
+- The version lives in [`changewrite.luau`](changewrite.luau) and is mirrored into [`pkg.luau`](pkg.luau).
 - Releases are handled by the [Changewrite](https://github.com/flipbook-labs/changewrite) action. Unreleased entries live as partials in [`.changes/`](.changes) and are assembled into [`CHANGELOG.md`](CHANGELOG.md) at release time. Add a `.changes/` entry for any user-facing change.
