@@ -9,7 +9,7 @@ On pull requests, it can publish each one to its own place and comment the previ
 Add the action to a workflow:
 
 ```yaml
-- uses: flipbook-labs/deploy-storybook@v0.4.1
+- uses: flipbook-labs/deploy-storybook@v0.5.0
 ```
 
 ## Use
@@ -51,7 +51,7 @@ jobs:
       - name: Build storybook
         run: rojo build storybook.project.json -o storybook.rbxl
 
-      - uses: flipbook-labs/deploy-storybook@v0.4.1
+      - uses: flipbook-labs/deploy-storybook@v0.5.0
         with:
           api-key: ${{ secrets.ROBLOX_API_KEY }}
           universe-id: ${{ vars.ROBLOX_STORYBOOK_UNIVERSE_ID }}
@@ -81,7 +81,7 @@ jobs:
       - name: Build storybook
         run: rojo build storybook.project.json -o storybook.rbxl
 
-      - uses: flipbook-labs/deploy-storybook@v0.4.1
+      - uses: flipbook-labs/deploy-storybook@v0.5.0
         with:
           api-key: ${{ secrets.ROBLOX_API_KEY }}
           universe-id: ${{ vars.ROBLOX_STORYBOOK_UNIVERSE_ID }}

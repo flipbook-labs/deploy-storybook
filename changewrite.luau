@@ -2,7 +2,7 @@ return {
 	categories = { "Features", "Changes", "Fixes", "Dependencies", "Internal" },
 	collapsed = { "Dependencies", "Internal" },
 	version = {
-		current = "0.4.1",
+		current = "0.5.0",
 		mirror = {
 			{ file = "pkg.luau" },
 			{ file = "README.md", pattern = "\n%- uses: flipbook%-labs/deploy%-storybook@v([%d%.]+)" },

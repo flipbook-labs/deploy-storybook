@@ -4,7 +4,7 @@
 return {
 	package = {
 		name = "deploy-storybook",
-		version = "0.4.1",
+		version = "0.5.0",
 		dev_dependencies = {
 			["agent-skills"] = {
 				rev = "v0.9.0",

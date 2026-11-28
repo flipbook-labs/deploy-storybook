@@ -2,6 +2,25 @@
 
 All notable changes to this project will be documented in this file.
 
+## v0.5.0
+
+Features 2 · Changes 1 · Internal 2
+
+### Features
+
+<picture><source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/flipbook-labs/deploy-storybook/main/.changes/assets/kind-comment-dark.svg" /><source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/flipbook-labs/deploy-storybook/main/.changes/assets/kind-comment-light.svg" /><img src="https://raw.githubusercontent.com/flipbook-labs/deploy-storybook/main/.changes/assets/kind-comment-light.png" alt="PR comment" height="18" align="texttop" /></picture> Add a `launch-data` input for preview links, and move to flipbook-cli 0.7.0 for its redesigned preview comment. ([#27](https://github.com/flipbook-labs/deploy-storybook/pull/27))
+
+<picture><source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/flipbook-labs/deploy-storybook/main/.changes/assets/kind-comment-dark.svg" /><source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/flipbook-labs/deploy-storybook/main/.changes/assets/kind-comment-light.svg" /><img src="https://raw.githubusercontent.com/flipbook-labs/deploy-storybook/main/.changes/assets/kind-comment-light.png" alt="PR comment" height="18" align="texttop" /></picture> Add `comment-template` and `assets-dir` inputs for customizing the preview comment and finding its buttons. ([#27](https://github.com/flipbook-labs/deploy-storybook/pull/27))
+
+### Changes
+
+<picture><source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/flipbook-labs/deploy-storybook/main/.changes/assets/kind-docs-dark.svg" /><source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/flipbook-labs/deploy-storybook/main/.changes/assets/kind-docs-light.svg" /><img src="https://raw.githubusercontent.com/flipbook-labs/deploy-storybook/main/.changes/assets/kind-docs-light.png" alt="Docs" height="18" align="texttop" /></picture> Rewrite the README around the Action's setup, inputs, and example workflows. ([#36](https://github.com/flipbook-labs/deploy-storybook/pull/36))
+
+### Internal
+
+<picture><source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/flipbook-labs/deploy-storybook/main/.changes/assets/kind-packages-dark.svg" /><source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/flipbook-labs/deploy-storybook/main/.changes/assets/kind-packages-light.svg" /><img src="https://raw.githubusercontent.com/flipbook-labs/deploy-storybook/main/.changes/assets/kind-packages-light.png" alt="Packages" height="18" align="texttop" /></picture> Move to Changewrite v0.16.0 and AgentSkills v0.9.0. ([#36](https://github.com/flipbook-labs/deploy-storybook/pull/36))
+
+<picture><source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/flipbook-labs/deploy-storybook/main/.changes/assets/kind-packages-dark.svg" /><source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/flipbook-labs/deploy-storybook/main/.changes/assets/kind-packages-light.svg" /><img src="https://raw.githubusercontent.com/flipbook-labs/deploy-storybook/main/.changes/assets/kind-packages-light.png" alt="Packages" height="18" align="texttop" /></picture> Vendor the shared skills into `.lpm/` on Lute `1.0.1-nightly.20261117`. ([#36](https://github.com/flipbook-labs/deploy-storybook/pull/36))
 
 ## v0.4.1
 
