@@ -87,26 +87,42 @@ jobs:
           universe-id: ${{ vars.ROBLOX_STORYBOOK_UNIVERSE_ID }}
           place-name: "PR ${{ github.event.pull_request.number }}"
           place-file: storybook.rbxl
+          launch-data: '{"search":"Button|Dialog"}'
 ```
 
 GitHub does not pass secrets to pull requests from forks, so previews deploy only for branches in this repository.
 
 To turn off the comment, pass `comment: 'false'`. If you keep several places with the same name, pass `place-id` to choose one.
 
+### Buttons
+
+The comment links to the preview with **Open Storybook** and **View on Roblox** buttons. GitHub can't style links in a comment, so the buttons are images your repository hosts. Draw them once with [flipbook-cli](https://github.com/flipbook-labs/flipbook-cli) and commit them to your default branch:
+
+```sh
+flipbook-cli generate
+```
+
+The buttons go to `.github/deploy-storybook/assets`. To keep them somewhere else, pass `--assets-dir` to `generate` and the same folder to the action's `assets-dir`. Until the buttons are on the default branch, or when the repository is private, the comment shows text links instead.
+
+To write the comment's copy and layout yourself, pass `comment-template`. flipbook-cli's README lists the placeholders it supports.
+
 ## Inputs
 
-| Input           | Required | Description                                                                            | Default               |
-| --------------- | -------- | -------------------------------------------------------------------------------------- | --------------------- |
-| `api-key`       | yes      | Roblox Open Cloud API key. Pass from a secret.                                         |                       |
-| `universe-id`   | yes      | Universe (experience) ID to deploy to.                                                 |                       |
-| `place-name`    | yes      | Name of the place to update or create, e.g. `Flipbook Stories` or `Storybook Preview`. |                       |
-| `place-file`    | yes      | Path to the built `.rbxl` place file containing your storybooks and stories.           |                       |
-| `place-id`      | no       | Explicit place ID to publish to; disambiguates same-named places.                      |                       |
-| `flipbook-rbxm` | no       | Path to a local `Flipbook.rbxm` runtime; skips downloading Flipbook from GitHub.       |                       |
-| `cli-version`   | no       | `flipbook-cli` version to install (no leading `v`).                                    | `0.6.0`               |
-| `rokit-version` | no       | Rokit version to install.                                                              | `v1.2.0`              |
-| `github-token`  | no       | Token used to authenticate downloads from GitHub Releases and to post PR comments.     | `${{ github.token }}` |
-| `comment`       | no       | Post a preview comment on the PR after deploy. Requires `pull-requests: write`.        | `'true'`              |
+| Input              | Required | Description                                                                            | Default                           |
+| ------------------ | -------- | -------------------------------------------------------------------------------------- | --------------------------------- |
+| `api-key`          | yes      | Roblox Open Cloud API key. Pass from a secret.                                         |                                   |
+| `universe-id`      | yes      | Universe (experience) ID to deploy to.                                                 |                                   |
+| `place-name`       | yes      | Name of the place to update or create, e.g. `Flipbook Stories` or `Storybook Preview`. |                                   |
+| `place-file`       | yes      | Path to the built `.rbxl` place file containing your storybooks and stories.           |                                   |
+| `place-id`         | no       | Explicit place ID to publish to; disambiguates same-named places.                      |                                   |
+| `flipbook-rbxm`    | no       | Path to a local `Flipbook.rbxm` runtime; skips downloading Flipbook from GitHub.       |                                   |
+| `cli-version`      | no       | `flipbook-cli` version to install (no leading `v`).                                    | `0.7.0`                           |
+| `rokit-version`    | no       | Rokit version to install.                                                              | `v1.2.0`                          |
+| `github-token`     | no       | Token used to authenticate downloads from GitHub Releases and to post PR comments.     | `${{ github.token }}`             |
+| `comment`          | no       | Post a preview comment on the PR after deploy. Requires `pull-requests: write`.        | `'true'`                          |
+| `launch-data`      | no       | JSON object to include as launch data in the preview comment's launch link.            |                                   |
+| `comment-template` | no       | Markdown template that replaces the preview comment's default layout.                  |                                   |
+| `assets-dir`       | no       | Folder on the default branch that holds the buttons from `flipbook-cli generate`.      | `.github/deploy-storybook/assets` |
 
 ## Contributing
 
